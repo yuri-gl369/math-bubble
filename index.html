@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Bắn Bóng Toán Học</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; min-height:100%; background:#10172a; color:#eaf1ff; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+  body { display:flex; justify-content:center; padding:14px; }
+  .app { width:min(100%, 820px); display:none; }
+  .screen-page { width:min(100%, 820px); min-height:min(760px, calc(100vh - 28px)); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:clamp(22px,5vw,48px); border:1px solid #344465; border-radius:24px; background:radial-gradient(ellipse at top, #20345a 0%, #131f39 54%, #10172a 100%); box-shadow:0 18px 55px #05091580; }
+  .screen-page h1 { font-size:clamp(30px,6vw,48px); line-height:1.1; margin:0 0 12px; letter-spacing:-1px; }
+  .screen-page p { color:#b9c8e6; max-width:520px; line-height:1.6; margin:0 0 26px; }
+  .menu-buttons { display:flex; flex-direction:column; gap:14px; width:min(100%,340px); }
+  .menu-btn { width:100%; border:1px solid #6486bd; border-radius:14px; padding:16px 18px; background:linear-gradient(135deg,#426fc0,#314d88); color:#fff; font:700 16px inherit; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 8px 22px #05091555; }
+  .menu-btn.secondary { background:#1b2c49; border-color:#52698e; color:#eaf1ff; }
+  .menu-btn:hover { filter:brightness(1.12); }
+  .menu-symbol { font-size:54px; margin-bottom:14px; filter:drop-shadow(0 5px 16px #78c6ff44); }
+  .formula-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; width:100%; max-width:620px; text-align:left; margin:6px 0 24px; }
+  .formula-card { background:#1a2a47; border:1px solid #3a5077; border-radius:12px; padding:14px; }
+  .formula-card strong { display:block; color:#cfe0ff; margin-bottom:6px; }
+  .formula-card span { color:#8ce0bd; font-size:18px; font-weight:800; overflow-wrap:anywhere; }
+  .knowledge-heading { width:100%; max-width:620px; text-align:left; color:#dce8ff; font-size:20px; margin:10px 0 4px; }
+  #knowledgeScreen { justify-content:flex-start; }
+  #knowledgeScreen .menu-symbol { margin-top:4px; }
+  .nav-home { border:1px solid #52698e; color:#dce8ff; background:#1b2c49; border-radius:999px; padding:7px 11px; font-size:12px; cursor:pointer; white-space:nowrap; }
+  @media (max-width:560px) { .screen-page { min-height:calc(100vh - 14px); padding:22px 16px; } .formula-list {grid-template-columns:1fr;} }
+  .intro { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin:0 2px 12px; }
+  .intro h1 { font-size:clamp(21px,4vw,30px); margin:0 0 4px; letter-spacing:-.5px; }
+  .intro p { margin:0; max-width:580px; color:#aebbd7; line-height:1.4; font-size:13px; }
+  .pill { white-space:nowrap; border:1px solid #334365; color:#c7d5f2; border-radius:999px; padding:7px 10px; font-size:11px; }
+  .stage { position:relative; background:#131f39; border:1px solid #344465; border-radius:20px; overflow:hidden; box-shadow:0 18px 55px #05091580; }
+  canvas { display:block; width:100%; height:auto; aspect-ratio:800 / 820; touch-action:manipulation; cursor:crosshair; }
+  .foot { display:flex; justify-content:space-between; gap:12px; color:#8798bb; font-size:11px; padding:10px 5px 0; line-height:1.5; }
+  .foot strong { color:#cbd8f4; font-weight:600; }
+  @media (max-width:560px) { body {padding:7px} .intro {display:block} .pill{display:inline-block;margin-top:8px} .foot{display:block} }
+</style>
+</head>
+<body>
+<section id="homeScreen" class="screen-page" aria-label="Màn hình chính">
+  <div class="menu-symbol"></div>
+  <h1>Bắn Bóng Toán Học</h1>
+  <p>Vừa chơi vừa ôn công thức Toán học! Chọn một mục để bắt đầu nhé.</p>
+  <div class="menu-buttons">
+    <button class="menu-btn" onclick="showScreen('gameMenu')">🎯 Trò chơi ôn tập</button>
+    <button class="menu-btn secondary" onclick="showScreen('knowledge')">📘 Ôn tập kiến thức</button>
+  </div>
+</section>
+<section id="gameMenuScreen" class="screen-page" style="display:none" aria-label="Chọn trò chơi">
+  <div class="menu-symbol">🎮</div>
+  <h1>Chọn trò chơi</h1>
+  <p>Chọn chủ đề Toán học bạn muốn luyện tập hôm nay.</p>
+  <div class="menu-buttons">
+    <button class="menu-btn" onclick="startGameMode('geometry')">📐 Trò chơi hình học</button>
+    <button class="menu-btn secondary" onclick="startGameMode('algebra')">🔢 Trò chơi đại số</button>
+    <button class="menu-btn secondary" onclick="showScreen('home')">← Quay về màn hình chính</button>
+  </div>
+</section>
+<section id="knowledgeScreen" class="screen-page" style="display:none" aria-label="Ôn tập kiến thức">
+  <div class="menu-symbol">📘</div>
+  <h1>Ôn tập kiến thức</h1>
+  <p>Ôn tập công thức Toán học theo chủ đề. Phần này gồm công thức hình học, lũy thừa và 7 hằng đẳng thức đáng nhớ.</p>
+  <div class="formula-list">
+    <div class="formula-card"><strong>Định lý Pythagore</strong><span>a² + b² = c²</span></div>
+    <div class="formula-card"><strong>Chu vi hình tròn</strong><span>C = 2πR</span></div>
+    <div class="formula-card"><strong>Diện tích hình tròn</strong><span>S = πR²</span></div>
+    <div class="formula-card"><strong>Chu vi hình vuông</strong><span>C = 4a</span></div>
+    <div class="formula-card"><strong>Diện tích hình vuông</strong><span>S = a²</span></div>
+    <div class="formula-card"><strong>Thể tích hình lập phương</strong><span>V = a³</span></div>
+    <div class="formula-card"><strong>Diện tích hình chữ nhật</strong><span>S = ab</span></div>
+    <div class="formula-card"><strong>Chu vi hình chữ nhật</strong><span>C = 2(a + b)</span></div>
+    <div class="formula-card"><strong>Diện tích tam giác</strong><span>S = ah / 2</span></div>
+    <div class="formula-card"><strong>Diện tích hình bình hành</strong><span>S = ah</span></div>
+    <div class="formula-card"><strong>Diện tích hình thang</strong><span>S = (a + b)h / 2</span></div>
+    <div class="formula-card"><strong>Thể tích hình hộp chữ nhật</strong><span>V = abc</span></div>
+  </div>
+  <h2 class="knowledge-heading">7 hằng đẳng thức đáng nhớ</h2>
+  <div class="formula-list">
+    <div class="formula-card"><strong>1. Bình phương của một tổng</strong><span>(a + b)² = a² + 2ab + b²</span></div>
+    <div class="formula-card"><strong>2. Bình phương của một hiệu</strong><span>(a − b)² = a² − 2ab + b²</span></div>
+    <div class="formula-card"><strong>3. Hiệu hai bình phương</strong><span>a² − b² = (a − b)(a + b)</span></div>
+    <div class="formula-card"><strong>4. Lập phương của một tổng</strong><span>(a + b)³ = a³ + 3a²b + 3ab² + b³</span></div>
+    <div class="formula-card"><strong>5. Lập phương của một hiệu</strong><span>(a − b)³ = a³ − 3a²b + 3ab² − b³</span></div>
+    <div class="formula-card"><strong>6. Tổng hai lập phương</strong><span>a³ + b³ = (a + b)(a² − ab + b²)</span></div>
+    <div class="formula-card"><strong>7. Hiệu hai lập phương</strong><span>a³ − b³ = (a − b)(a² + ab + b²)</span></div>
+  </div>
+  <h2 class="knowledge-heading">Lũy thừa và căn bậc hai</h2>
+  <div class="formula-list">
+    <div class="formula-card"><strong>Nhân hai lũy thừa cùng cơ số</strong><span>aᵐ · aⁿ = aᵐ⁺ⁿ</span></div>
+    <div class="formula-card"><strong>Chia hai lũy thừa cùng cơ số</strong><span>aᵐ : aⁿ = aᵐ⁻ⁿ</span></div>
+    <div class="formula-card"><strong>Lũy thừa của lũy thừa</strong><span>(aᵐ)ⁿ = aᵐⁿ</span></div>
+    <div class="formula-card"><strong>Căn bậc hai của bình phương</strong><span>√(a²) = |a|</span></div>
+  </div>
+  <div class="menu-buttons">
+    <button class="menu-btn" onclick="showScreen('game')">🎯 Vào trò chơi</button>
+    <button class="menu-btn secondary" onclick="showScreen('home')">← Quay về màn hình chính</button>
+  </div>
+</section>
+<div class="app" id="gameScreen">
+  <div class="intro">
+    <div>
+      <h1>Bắn Bóng Toán Học</h1>
+      <p>Bắn công thức vào đúng cụm kiến thức. Ghép đủ 3 bóng cùng chủ đề để làm nổ cụm bóng — màu sắc chỉ để trang trí!</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="nav-home" onclick="showScreen('home')">⌂ Trang chủ</button><div class="pill">BẢN THỬ NGHIỆM 0.1</div></div>
+  </div>
+  <div class="stage"><canvas id="game" width="800" height="820" aria-label="Trò chơi bắn bóng công thức toán học"></canvas></div>
+  <div class="foot">
+    <div><strong>Cách chơi:</strong> Chạm / nhấp vào hướng muốn bắn. Nhấn <strong>phím cách</strong> để đổi bóng, <strong>R</strong> để chơi lại.</div>
+    <div>Điểm cao nhất được lưu trên trình duyệt này.</div>
+  </div>
+</div>
+<script>
+function startGameMode(mode) {
+  const title = document.querySelector('#gameScreen .intro h1');
+  const desc = document.querySelector('#gameScreen .intro p');
+  if (mode === 'geometry') {
+    title.textContent = 'Bắn Bóng Toán Học — Hình học';
+    desc.textContent = 'Luyện tập công thức hình học. Ghép đủ 3 bóng cùng chủ đề để làm nổ cụm bóng.';
+  } else {
+    title.textContent = 'Bắn Bóng Toán Học — Đại số';
+    desc.textContent = 'Bạn đã chọn chế độ đại số. Hiện trò chơi đang dùng bộ bóng công thức hình học; bộ câu hỏi đại số sẽ cần được bổ sung riêng.';
+  }
+  showScreen('game');
+}
+function showScreen(screen) {
+  document.getElementById('homeScreen').style.display = screen === 'home' ? 'flex' : 'none';
+  document.getElementById('knowledgeScreen').style.display = screen === 'knowledge' ? 'flex' : 'none';
+  document.getElementById('gameMenuScreen').style.display = screen === 'gameMenu' ? 'flex' : 'none';
+  document.getElementById('gameScreen').style.display = screen === 'game' ? 'block' : 'none';
+}
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = 800, H = 820, R = 27, DX = 56, DY = 49, X0 = 36, Y0 = 126, COLS = 13;
+  const cannon = { x: 400, y: 724 };
+  const colors = ['#74c0fc','#ffa8a8','#b197fc','#8ce99a','#ffd43b','#ffa94d','#66d9e8','#f783ac'];
+  const topics = {
+    P: { key:'P', name:'Định lý Pythagore', short:['Định lý', 'Pythagore'], formula:['a² + b²',' = c²'], color:'#78c6ff' },
+    C: { key:'C', name:'Chu vi tròn', short:['Chu vi','hình tròn'], formula:['C = 2πR'], color:'#ff9eaa' },
+    A: { key:'A', name:'Diện tích tròn', short:['Diện tích','hình tròn'], formula:['S = πR²'], color:'#b5a0ff' },
+    D: { key:'D', name:'Chu vi vuông', short:['Chu vi','hình vuông'], formula:['C = 4a'], color:'#87dfa2' },
+    S: { key:'S', name:'Diện tích vuông', short:['Diện tích','hình vuông'], formula:['S = a²'], color:'#ffd36d' },
+    V: { key:'V', name:'Thể tích lập phương', short:['Thể tích','lập phương'], formula:['V = a³'], color:'#ffb875' }
+  };
+  function knowledgeNote(key) {
+    const notes = {
+      P: 'Định lý Pythagore: trong tam giác vuông, a² + b² = c²; c là cạnh huyền.',
+      C: 'C = 2πR là công thức tính chu vi hình tròn, với R là bán kính.',
+      A: 'S = πR² là công thức tính diện tích hình tròn, với R là bán kính.',
+      D: 'C = 4a là công thức tính chu vi hình vuông, với a là độ dài cạnh.',
+      S: 'S = a² là công thức tính diện tích hình vuông, với a là độ dài cạnh.',
+      V: 'V = a³ là công thức tính thể tích hình lập phương, với a là độ dài cạnh.'
+    };
+    return notes[key] || '';
+  }
+  function newBubble(key, isShot=false) {
+    return { key, color: colors[Math.floor(Math.random()*colors.length)], x:0, y:0, r:R, isShot, id:Math.random().toString(36).slice(2) };
+  }
+  let grid = new Map(), projectile = null, score = 0, shots = 0, misses = 0, gameOver = false, won = false, currentLevel = 1;
+  let currentKey = 'P', nextKey = 'C', aim = {x:400,y:300}, message = 'Ghép 3 bóng cùng chủ đề để ghi điểm!', messageUntil = 0;
+  let particles = [], lastTime = 0, anim = 0, highScore = 0;
+  try { highScore = Number(localStorage.getItem('mathBubbleHighScore') || 0); } catch (_) {}
+  const cellKey = (r,c) => `${r},${c}`;
+  function coords(r,c) { return { x:X0 + c*DX + (r%2)*DX/2, y:Y0 + r*DY }; }
+  function get(r,c) { return grid.get(cellKey(r,c)); }
+  function set(r,c,b) { if (b) { const p=coords(r,c); b.x=p.x; b.y=p.y; grid.set(cellKey(r,c),b); } else grid.delete(cellKey(r,c)); }
+  function parseCell(k) { return k.split(',').map(Number); }
+  function valid(r,c) { return r>=0 && c>=0 && c<COLS && r<16; }
+  function neighbors(r,c) {
+    const upper = r%2===1 ? [c,c+1] : [c-1,c];
+    const lower = r%2===1 ? [c,c+1] : [c-1,c];
+    return [[r,c-1],[r,c+1],[r-1,upper[0]],[r-1,upper[1]],[r+1,lower[0]],[r+1,lower[1]]].filter(([rr,cc])=>valid(rr,cc));
+  }
+  function say(text, ms=1700) { message=text; messageUntil=performance.now()+ms; }
+  function saveHighScore() {
+    if (score>highScore) { highScore=score; try { localStorage.setItem('mathBubbleHighScore',String(highScore)); } catch (_) {} }
+  }
+  function initBoard() {
+    grid.clear();
+    const rows = currentLevel === 1 ? [
+      [null,'P','P','C','C',null,'A','A','D','D',null,'V','V'],
+      ['P','P','C','C','C','A','A','A','A','D','D','V','V'],
+      ['S','S','S','P','P','P','C','C','C','A','A','A','D'],
+      ['S','S','P','P','P','C','C','A','A','A','D','D','D'],
+      ['V','V','V','S','S','S','P','P','P','C','C','C','A'],
+      ['V','V','S','S','S','P','P','C','C','C','A','A','D'],
+      ['D','D','D','S','S','S','A','A','A','V','V','V','P']
+    ] : [
+      ['P','C','A','D','S','V','P','C','A','D','S','V','P'],
+      ['P','P','C','C','A','A','D','D','S','S','V','V','P'],
+      ['S','S','P','P','C','C','A','A','V','V','D','D','S'],
+      ['V','V','S','S','P','P','C','C','A','A','D','D','V'],
+      ['D','D','V','V','S','S','P','P','C','C','A','A','D'],
+      ['A','A','D','D','V','V','S','S','P','P','C','C','A'],
+      ['C','C','A','A','D','D','V','V','S','S','P','P','C'],
+      ['P','P','C','C','A','A','D','D','S','S','V','V','P']
+    ];
+    rows.forEach((row,r)=>row.forEach((key,c)=>{ if(key) set(r,c,newBubble(key)); }));
+  }
+  function reset() {
+    score=0; shots=0; misses=0; projectile=null; particles=[]; gameOver=false; won=false;
+    currentKey=randomKey(); nextKey=randomKey();
+    initBoard(); say('Bắn công thức vào cụm cùng chủ đề!',2600); aim={x:400,y:300};
+  }
+  function nextLevel() { currentLevel=2; reset(); say('MÀN 2 · Thử thách nâng cao bắt đầu!',2400); }
+  function randomKey() { const keys=Object.keys(topics); return keys[Math.floor(Math.random()*keys.length)]; }
+  function switchBall() { if(projectile || gameOver) return; [currentKey,nextKey]=[nextKey,currentKey]; say('Đã đổi bóng đạn: '+topics[currentKey].name,900); }
+  function dist(a,b) { return Math.hypot(a.x-b.x,a.y-b.y); }
+  function shoot(tx,ty) {
+    if (gameOver || projectile) return;
+    let dx=tx-cannon.x, dy=ty-cannon.y;
+    if (dy > -35) dy = -Math.max(90,Math.abs(dx)*0.25);
+    const len=Math.hypot(dx,dy)||1;
+    const speed=10.8;
+    projectile={ x:cannon.x, y:cannon.y-37, vx:dx/len*speed, vy:dy/len*speed, key:currentKey, color:colors[Math.floor(Math.random()*colors.length)], r:R, isShot:true };
+    currentKey=nextKey; nextKey=randomKey(); shots++;
+  }
+  function nearestAttach(targetBubble, px, py) {
+    const targetCell = [...grid.entries()].find(([,b])=>b===targetBubble);
+    if(!targetCell) return null;
+    const [r,c]=parseCell(targetCell[0]);
+    const candidates=neighbors(r,c).filter(([rr,cc])=>!get(rr,cc));
+    if(!candidates.length) {
+      // Nearby fallback in case the contacted area is completely packed.
+      let best=null, bd=Infinity;
+      for(let rr=0;rr<15;rr++) for(let cc=0;cc<COLS;cc++) if(!get(rr,cc)) {
+        const p=coords(rr,cc), d=Math.hypot(p.x-px,p.y-py);
+        if(d<bd){bd=d;best=[rr,cc];}
+      }
+      return best;
+    }
+    candidates.sort((a,b)=>{
+      const pa=coords(a[0],a[1]), pb=coords(b[0],b[1]);
+      return Math.hypot(pa.x-px,pa.y-py)-Math.hypot(pb.x-px,pb.y-py);
+    });
+    return candidates[0];
+  }
+  function clusterFrom(r,c,key) {
+    const stack=[[r,c]], seen=new Set(), out=[];
+    while(stack.length){
+      const [rr,cc]=stack.pop(), id=cellKey(rr,cc);
+      if(seen.has(id)) continue; seen.add(id);
+      const b=get(rr,cc); if(!b || b.key!==key) continue;
+      out.push([rr,cc]);
+      for(const n of neighbors(rr,cc)) if(!seen.has(cellKey(n[0],n[1]))) stack.push(n);
+    }
+    return out;
+  }
+  function removeFloating() {
+    const seen=new Set(), stack=[];
+    for(let c=0;c<COLS;c++) if(get(0,c)) stack.push([0,c]);
+    while(stack.length){const [r,c]=stack.pop(), id=cellKey(r,c); if(seen.has(id)||!get(r,c))continue; seen.add(id); neighbors(r,c).forEach(n=>stack.push(n));}
+    let dropped=0;
+    for(const [id,b] of [...grid.entries()]) if(!seen.has(id)){ const [r,c]=parseCell(id); burstAt(b.x,b.y,b.color,8); grid.delete(id); dropped++; }
+    if(dropped) { score += dropped*5; say(`Bóng rơi khỏi cụm: +${dropped*5} điểm`,1500); }
+  }
+  function burstAt(x,y,color,count=14) {
+    for(let i=0;i<count;i++) particles.push({x,y,vx:(Math.random()-.5)*(2+Math.random()*6),vy:(Math.random()-.5)*(2+Math.random()*6),life:1,color,r:2+Math.random()*3});
+  }
+  function attachProjectile(hit) {
+    if(!projectile || gameOver) return;
+    const place=nearestAttach(hit,projectile.x,projectile.y);
+    if(!place){ endGame(false,'Bàn chơi đã kín!'); return; }
+    const [r,c]=place;
+    const b={...newBubble(projectile.key,true),x:projectile.x,y:projectile.y,color:projectile.color};
+    set(r,c,b); projectile=null;
+    const cluster=clusterFrom(r,c,b.key);
+    if(cluster.length>=3){
+      cluster.forEach(([rr,cc])=>{const q=get(rr,cc);if(q)burstAt(q.x,q.y,q.color,12);grid.delete(cellKey(rr,cc));});
+      const gained=cluster.length*10;
+      score+=gained; misses=0; say(`CHÍNH XÁC! ${topics[b.key].name} · +${gained} điểm`,2100);
+      removeFloating();
+    } else {
+      misses++;
+      say(`Chưa ghép được cụm 3 bóng. ${knowledgeNote(b.key)}`,3200);
+      if(misses>=5){ addRow(); misses=0; }
+    }
+    saveHighScore();
+    if(grid.size===0) endGame(true,'Xuất sắc! Bạn đã dọn sạch bàn bóng.');
+    checkDanger();
+  }
+  function addRow() {
+    const keys=Object.keys(topics);
+    const pattern=[];
+    while(pattern.length<COLS){const k=keys[Math.floor(Math.random()*keys.length)];const run=2+Math.floor(Math.random()*3);for(let i=0;i<run && pattern.length<COLS;i++)pattern.push(k);}
+    const rows=[...grid.entries()].map(([id,b])=>[...parseCell(id),b]).sort((a,b)=>b[0]-a[0]);
+    for(const [r,c,b] of rows){ grid.delete(cellKey(r,c)); if(r+1>=15){ endGame(false,'Bóng đã chạm vạch nguy hiểm!'); return; } set(r+1,c,b); }
+    // Keep a few gaps in the top row so upward shots have a valid attachment position.
+    for(let i=0;i<3;i++) pattern[Math.floor(Math.random()*COLS)]=null;
+    pattern.forEach((k,c)=>{ if(k) set(0,c,newBubble(k)); });
+    say('Hàng bóng mới xuất hiện!',1200); checkDanger();
+  }
+  function checkDanger(){ for(const [id,b] of grid){const [r,c]=parseCell(id); if(coords(r,c).y+R>=646){endGame(false,'Bóng đã chạm vạch nguy hiểm!');break;}} }
+  function endGame(isWin, text) { gameOver=true; won=isWin; projectile=null; saveHighScore(); say(text,999999); }
+  function update(dt) {
+    if(projectile && !gameOver){
+      projectile.x+=projectile.vx*dt; projectile.y+=projectile.vy*dt;
+      if(projectile.x<R){projectile.x=R;projectile.vx=Math.abs(projectile.vx);}
+      if(projectile.x>W-R){projectile.x=W-R;projectile.vx=-Math.abs(projectile.vx);}
+      let hit=null;
+      if(projectile.y<=Y0-R/2) { attachProjectileToTop(); }
+      else {
+        for(const b of grid.values()) if(dist(projectile,b)<=R*2-2){hit=b;break;}
+        if(hit) attachProjectile(hit);
+      }
+      if(projectile && projectile.y>H+R) { projectile=null; }
+    }
+    particles=particles.filter(p=>p.life>0);
+    particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=0.045*dt;p.life-=0.023*dt;});
+  }
+  function attachProjectileToTop(){
+    if(!projectile)return;
+    let best=null,bd=Infinity;
+    for(let c=0;c<COLS;c++) if(!get(0,c)){const p=coords(0,c),d=Math.hypot(p.x-projectile.x,p.y-projectile.y);if(d<bd){bd=d;best=[0,c];}}
+    if(!best){ addRow(); for(let c=0;c<COLS;c++)if(!get(0,c)){best=[0,c];break;} }
+    if(best){const [r,c]=best;const b={...newBubble(projectile.key,true),color:projectile.color};set(r,c,b);projectile=null;const cluster=clusterFrom(r,c,b.key);if(cluster.length>=3){cluster.forEach(([rr,cc])=>{const q=get(rr,cc);if(q)burstAt(q.x,q.y,q.color,12);grid.delete(cellKey(rr,cc));});score+=cluster.length*10;misses=0;say(`CHÍNH XÁC! +${cluster.length*10} điểm`,1700);removeFloating();}else{misses++;say(`Chưa ghép được cụm 3 bóng. ${knowledgeNote(b.key)}`,3200);if(misses>=5){addRow();misses=0;}}saveHighScore();if(grid.size===0)endGame(true,'Xuất sắc! Bạn đã dọn sạch bàn bóng.');checkDanger();}
+  }
+  function roundRect(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.4;ctx.stroke();}}
+  function drawBubble(x,y,b,mode='target',radius=R){
+    const t=topics[b.key];
+    ctx.save();
+    ctx.shadowColor=b.color+'55';ctx.shadowBlur=8;
+    const grad=ctx.createRadialGradient(x-radius*.35,y-radius*.45,2,x,y,radius*1.1);
+    grad.addColorStop(0,'#ffffff'); grad.addColorStop(.18,b.color); grad.addColorStop(1,shade(b.color,-28));
+    ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+    ctx.shadowBlur=0;ctx.lineWidth=2;ctx.strokeStyle='#ffffffaa';ctx.stroke();
+    ctx.beginPath();ctx.ellipse(x-radius*.33,y-radius*.48,radius*.19,radius*.10,-.55,0,Math.PI*2);ctx.fillStyle='#ffffff9c';ctx.fill();
+    ctx.fillStyle='#12213b';ctx.textAlign='center';ctx.textBaseline='middle';
+    if(mode==='target'){
+      ctx.font='700 9.8px system-ui, sans-serif';
+      const lines=t.short; const start=y-(lines.length-1)*6;
+      lines.forEach((line,i)=>ctx.fillText(line,x,start+i*12, radius*1.75));
+    } else {
+      ctx.font='800 12px system-ui, sans-serif';
+      const lines=t.formula; const start=y-(lines.length-1)*7;
+      lines.forEach((line,i)=>ctx.fillText(line,x,start+i*14,radius*1.85));
+    }
+    ctx.restore();
+  }
+  function shade(hex,percent){const n=parseInt(hex.slice(1),16),t=percent<0?0:255,p=Math.abs(percent)/100;const Rr=n>>16,G=(n>>8)&0xff,B=n&0xff;return '#'+(0x1000000+(Math.round((t-Rr)*p)+Rr)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#172544');bg.addColorStop(1,'#0e1830');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    // Subtle background stars
+    for(let i=0;i<30;i++){const x=(i*137+19)%W,y=(i*83+31)%H;ctx.fillStyle='#dbeafe18';ctx.fillRect(x,y,2,2);}
+    // Header
+    ctx.fillStyle='#eaf2ff';ctx.font='800 24px system-ui';ctx.textAlign='left';ctx.fillText('BẮN BÓNG TOÁN HỌC',26,38);
+    ctx.fillStyle='#8fa6d4';ctx.font='12px system-ui';ctx.fillText('GHÉP BÓNG BẰNG KIẾN THỨC · KHÔNG GHÉP THEO MÀU',27,58);
+    roundRect(24,72,752,39,'#1c2d4d','#354a70');
+    ctx.textAlign='left';ctx.font='700 14px system-ui';ctx.fillStyle='#dbeafe';ctx.fillText('ĐIỂM  '+score,40,96);
+    ctx.fillStyle='#9fb0d1';ctx.font='12px system-ui';ctx.fillText('KỶ LỤC  '+Math.max(highScore,score),178,96);
+    ctx.fillText('Sai 5 lượt liên tiếp → thêm hàng bóng',420,96);
+    // Board frame
+    roundRect(17,116,766,507,20,'#101d35','#2d4266');
+    // danger line
+    ctx.save();ctx.setLineDash([8,7]);ctx.strokeStyle='#ff7f7f8a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(26,646);ctx.lineTo(774,646);ctx.stroke();ctx.restore();
+    ctx.fillStyle='#ffb2b2';ctx.font='10px system-ui';ctx.textAlign='right';ctx.fillText('VẠCH NGUY HIỂM',765,638);
+    for(const [id,b] of grid){const [r,c]=parseCell(id); const p=coords(r,c);drawBubble(p.x,p.y,b,'target');}
+    // aim guide
+    if(!projectile&&!gameOver){
+      let dx=aim.x-cannon.x,dy=aim.y-cannon.y;if(dy>-30)dy=-Math.max(90,Math.abs(dx)*.25);const len=Math.hypot(dx,dy)||1;
+      ctx.save();ctx.setLineDash([5,7]);ctx.strokeStyle='#dbeafe66';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cannon.x,cannon.y-34);ctx.lineTo(cannon.x+dx/len*380,cannon.y+dy/len*380);ctx.stroke();ctx.restore();
+    }
+    // Cannon base
+    ctx.save();ctx.translate(cannon.x,cannon.y);
+    let adx=aim.x-cannon.x,ady=aim.y-cannon.y;if(ady>-30)ady=-Math.max(90,Math.abs(adx)*.25);let ang=Math.atan2(ady,adx);
+    ctx.rotate(ang+Math.PI/2);
+    roundRect(-15,-58,30,75,10,'#526b9b','#9eb7e7');roundRect(-10,-65,20,44,8,'#8ba8df','#d5e3ff');
+    ctx.restore();
+    ctx.beginPath();ctx.arc(cannon.x,cannon.y,35,0,Math.PI*2);ctx.fillStyle='#293d62';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#a9c1ed';ctx.stroke();
+    drawBubble(cannon.x,cannon.y-18,{key:currentKey,color:topics[currentKey].color},'formula',R-2);
+    // Next bubble
+    roundRect(510,678,115,84,'#182844','#3a4d72');ctx.fillStyle='#9aadd0';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText('BÓNG KẾ TIẾP',567,696);
+    drawBubble(567,730,{key:nextKey,color:topics[nextKey].color},'formula',R-5);
+    // swap / restart buttons
+    roundRect(652,684,120,36,'#263d63','#5575a6');ctx.fillStyle='#eff6ff';ctx.font='700 12px system-ui';ctx.fillText('ĐỔI BÓNG  [PHÍM CÁCH]',712,706);
+    roundRect(652,729,120,31,'#263044','#50617f');ctx.fillStyle='#d2def4';ctx.font='700 12px system-ui';ctx.fillText('CHƠI LẠI  [R]',712,749);
+    if(projectile) drawBubble(projectile.x,projectile.y,{key:projectile.key,color:projectile.color},'formula',projectile.r);
+    particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life);ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();ctx.globalAlpha=1;});
+    // Toast / end screen
+    if(performance.now()<messageUntil && !gameOver){
+      roundRect(70,558,660,58,'#0b1427eF','#3a527d');ctx.fillStyle='#e6efff';ctx.font='600 12px system-ui';ctx.textAlign='center';
+      const words=message.split(' ');let lines=[''];
+      for(const word of words){const i=lines.length-1;const test=(lines[i]+' '+word).trim();if(ctx.measureText(test).width>620&&lines[i])lines.push(word);else lines[i]=test;}
+      if(lines.length>2){lines=[lines[0],lines.slice(1).join(' ')];}
+      lines.slice(0,2).forEach((line,i)=>ctx.fillText(line,400,581+i*16,620));
+    }
+    if(gameOver){
+      ctx.fillStyle='#071020bb';ctx.fillRect(17,116,766,645);
+      roundRect(135,285,530,260,'#182946','#536b98');
+      ctx.textAlign='center';ctx.fillStyle=won?'#9ef0bd':'#ffb8be';ctx.font='800 30px system-ui';ctx.fillText(won?'HOÀN THÀNH!':'KẾT THÚC VÁN',400,352);
+      ctx.fillStyle='#eef4ff';ctx.font='600 16px system-ui';ctx.fillText(message,400,374,460);
+      ctx.fillStyle='#a9bddf';ctx.font='14px system-ui';ctx.fillText('Điểm của bạn: '+score+'   ·   Kỷ lục: '+highScore,400,408);
+      if(won && currentLevel===1){
+        roundRect(255,432,290,43,'#277b69','#9ef0d2');ctx.fillStyle='#fff';ctx.font='700 15px system-ui';ctx.fillText('SANG MÀN 2  ▶',400,459);
+        roundRect(285,486,230,38,'#263d63','#718db8');ctx.fillStyle='#dce8ff';ctx.font='700 13px system-ui';ctx.fillText('CHƠI LẠI MÀN 1  [R]',400,510);
+      } else {
+        roundRect(285,454,230,43,'#3865a8','#a9c8ff');ctx.fillStyle='#fff';ctx.font='700 15px system-ui';ctx.fillText('CHƠI LẠI  [R]',400,481);
+      }
+    }
+  }
+  function frame(ts){const dt=Math.min(2.1,(ts-(lastTime||ts))/16.67);lastTime=ts;update(dt);draw();anim=requestAnimationFrame(frame);}
+  function getPos(e){const rect=canvas.getBoundingClientRect();return {x:(e.clientX-rect.left)/rect.width*W,y:(e.clientY-rect.top)/rect.height*H};}
+  canvas.addEventListener('pointermove',e=>{aim=getPos(e);});
+  canvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();const p=getPos(e);aim=p;
+    if(gameOver){if(won&&currentLevel===1&&p.y>=425&&p.y<=480){nextLevel();return;}if(p.y>425&&p.y<535)reset();return;}
+    if(p.x>=640&&p.y>=725){reset();return;}
+    if(p.x>=640&&p.y>=675&&p.y<725){switchBall();return;}
+    if(p.y<655)shoot(p.x,p.y);
+  });
+  window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();switchBall();}if(e.key.toLowerCase()==='r')reset();});
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
