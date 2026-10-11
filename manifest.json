@@ -1,0 +1,15 @@
+{
+  "name": "Math Bubble Shooter",
+  "short_name": "Math Bubble",
+  "description": "Game bắn bóng học toán",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a2a47",
+  "theme_color": "#1a2a47",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
